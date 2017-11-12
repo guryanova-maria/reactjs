@@ -4,42 +4,59 @@ class Categories extends Component {
 
     constructor(props) {
         super(props);
-        // this.state = {
-        //     item_01: {id: 'item_01', name: 'Homework 1', nodes: [], parent: ''},
-        //     item_02: {id: 'item_02', name: 'Homework 2', nodes: ['item-03'], parent: ''},
-        //     item_03: {id: 'item_03', name: 'Homework 2-1', nodes: [], parent: 'item-02'}
-        // };
         this.state = {
             list: [
-                    'Homework 1',
-                    'Homework 2',
-                    'Homework 3',
-                    'Homework 4',
-            ]
+                {id: 'item_01', name: 'Homework 1', nodes: [], parentId: null},
+                {id: 'item_02', name: 'Homework 2', nodes: ['item_03', 'item_04'], parentId: null},
+                {id: 'item_03', name: 'Homework 2-1', nodes: ['item_04'], parentId: 'item_02'},
+                {id: 'item_04', name: 'Homework 2-2', nodes: [], parentId: 'item_02'},
+                {id: 'item_05', name: 'Homework 2-1-2', nodes: [], parentId: 'item_03'}
+            ],
+            itemsRendered: []
         };
     }
 
     render() {
-        const {list} = this.state;
+        const list = this.state.list;
 
         return (
             <div>
-                <List list={list}/>
+                <List list={list} fullList={list}/>
             </div>
         );
     }
 }
 
-const List = ({list}) => (
-    <ol>
-        {
-            list.map((item, index) => (
-                <li key = {index} >
-                    { item }
-                </li>
-            ))
+const List = ({list, fullList}) => {
+    return(
+        <ol>
+            {
+                list.map(item =>
+                    <ListItem item={item} fullList={fullList}/>
+                )
+            }
+        </ol>
+    );
+};
+
+let getItemById = (id, fullList) => {
+    for (let i = 0; i < fullList.length; i++) {
+        if (fullList[i].id === id) {
+            return fullList[i];
         }
-    </ol>
-)
+    }
+}
+
+const ListItem = ({item, fullList}) => {
+    let nodesList = item.nodes.map(node => getItemById(node, fullList));
+    return (
+        <li key={item.id}>
+            {item.name}
+            {!!nodesList.length &&
+            <List list={nodesList} fullList={fullList}/>
+            }
+        </li>
+    )
+}
 
 export default Categories;
