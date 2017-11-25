@@ -5,6 +5,13 @@ class Categories extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            // list: [
+                // {id: 'item_01', name: 'Homework 1', nodes: [], parentId: null},
+                // {id: 'item_02', name: 'Homework 2', nodes: [], parentId: null},
+                // {id: 'item_03', name: 'Homework 3', nodes: [], parentId: null},
+                // {id: 'item_04', name: 'Homework 4', nodes: [], parentId: null},
+                // {id: 'item_05', name: 'Homework 5', nodes: [], parentId: null}
+            // ]
             list: [
                 {id: 'item_01', name: 'Homework 1', nodes: [], parentId: null},
                 {id: 'item_02', name: 'Homework 2', nodes: ['item_03', 'item_04'], parentId: null},
@@ -19,8 +26,14 @@ class Categories extends Component {
         this.deleteItem = this.deleteItem.bind(this);
     }
 
-    deleteItem(id) {
+    // todo:
+    // remove children;
+    // remove root elements
+    deleteItem(id, parentId, fullList) {
         const newState = this.state.list.slice();
+        let parentItem = getItemById(parentId, fullList);
+        parentItem.nodes.splice(fullList.indexOf(id), 1);
+        newState[fullList.indexOf(parentItem)].nodes = parentItem.nodes;
         newState.splice(id, 1);
         this.setState({
             list: newState
@@ -63,10 +76,12 @@ let getItemById = (id, fullList) => {
 
 const ListItem = ({item, fullList, deleteItem}) => {
     let nodesList = item.nodes.map(node => getItemById(node, fullList));
+    let itemIndex = fullList.indexOf(item);
+
     return (
         <li key={item.id}>
             {item.name}
-            <button onClick={ () => {deleteItem(item.id)}}>x</button>
+            <button onClick={ () => {deleteItem(itemIndex, item.parentId, fullList)}}>x</button>
             {!!nodesList.length &&
             <List list={nodesList} fullList={fullList} parentId={item.id} deleteItem={deleteItem}/>
             }
