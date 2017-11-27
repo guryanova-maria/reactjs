@@ -29,25 +29,56 @@ class Categories extends Component {
     // todo:
     // remove children;
     // remove root elements
-    deleteItem(id, parentId, fullList) {
-        const newState = this.state.list.slice();
-        let parentItem = getItemById(parentId, fullList);
-        parentItem.nodes.splice(fullList.indexOf(id), 1);
-        newState[fullList.indexOf(parentItem)].nodes = parentItem.nodes;
-        newState.splice(id, 1);
-        this.setState({
-            list: newState
-        });
+    // id: 'item_01' etc.
+    // fullList: [{...}, {...}, ...]
+    deleteItem(item, fullList, deleteParentNode = false) {
+        let newState = fullList.slice();
+        let parentItem = getItemById(item.parentId, fullList);
+
+        // delete the item itself
+        newState.splice(fullList.indexOf(item), 1);
+
+        // delete item's children (nodes) from fullList
+        let itemNodesCount = item.nodes.length;
+        for (let i=0; i<itemNodesCount; i++) {
+            let id = item.nodes[i];
+            let node = getItemById(id, fullList);
+            newState = this.deleteItem(node, newState);
+
+        }
+
+        // delete item from parent's children (nodes)
+        if (deleteParentNode) {
+            if (!!parentItem) {
+                let parentItemId = newState.indexOf(parentItem);
+                parentItem.nodes.splice(parentItem.nodes.indexOf(item.id), 1);
+                newState[parentItemId].nodes = parentItem.nodes;
+            }
+            this.setState({
+                list: newState
+            });
+        } else {
+            return newState;
+        }
+
     }
 
     render() {
         const list = this.state.list;
 
-        return (
-            <div>
-                <List list={list} fullList={list} parentId={null} deleteItem={this.deleteItem} />
-            </div>
-        );
+        if(list.length > 0) {
+            return (
+                <div>
+                    <List list={list} fullList={list} parentId={null} deleteItem={this.deleteItem} />
+                </div>
+            );
+        } else {
+            return (
+                <div>
+                    <p>No tasks</p>
+                </div>
+            );
+        }
     }
 }
 
@@ -76,12 +107,11 @@ let getItemById = (id, fullList) => {
 
 const ListItem = ({item, fullList, deleteItem}) => {
     let nodesList = item.nodes.map(node => getItemById(node, fullList));
-    let itemIndex = fullList.indexOf(item);
 
     return (
         <li key={item.id}>
             {item.name}
-            <button onClick={ () => {deleteItem(itemIndex, item.parentId, fullList)}}>x</button>
+            <button onClick={ () => {deleteItem(item, fullList, true)}}>x</button>
             {!!nodesList.length &&
             <List list={nodesList} fullList={fullList} parentId={item.id} deleteItem={deleteItem}/>
             }
