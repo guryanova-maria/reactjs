@@ -1,17 +1,18 @@
 import React, { Component } from 'react';
 
+let getItemById = (id, fullList) => {
+    for (let i = 0; i < fullList.length; i++) {
+        if (fullList[i].id === id) {
+            return fullList[i];
+        }
+    }
+};
+
 class Categories extends Component {
 
     constructor(props) {
         super(props);
         this.state = {
-            // list: [
-                // {id: 'item_01', name: 'Homework 1', nodes: [], parentId: null},
-                // {id: 'item_02', name: 'Homework 2', nodes: [], parentId: null},
-                // {id: 'item_03', name: 'Homework 3', nodes: [], parentId: null},
-                // {id: 'item_04', name: 'Homework 4', nodes: [], parentId: null},
-                // {id: 'item_05', name: 'Homework 5', nodes: [], parentId: null}
-            // ]
             list: [
                 {id: 'item_01', name: 'Homework 1', nodes: [], parentId: null},
                 {id: 'item_02', name: 'Homework 2', nodes: ['item_03', 'item_04'], parentId: null},
@@ -20,15 +21,20 @@ class Categories extends Component {
                 {id: 'item_05', name: 'Homework 2-1-1', nodes: [], parentId: 'item_03'},
                 {id: 'item_06', name: 'Homework 2-1-2', nodes: [], parentId: 'item_03'},
                 {id: 'item_07', name: 'Homework 2-2-1', nodes: [], parentId: 'item_04'}
-            ]
+            ],
+            activeItemId: ''
         };
-
         this.deleteItem = this.deleteItem.bind(this);
+        this.showItem = this.showItem.bind(this);
     }
 
-    // todo:
-    // remove children;
-    // remove root elements
+    showItem (event, item) {
+        event.preventDefault();
+        this.setState({
+            activeItemId: item.id
+        });
+    }
+
     // id: 'item_01' etc.
     // fullList: [{...}, {...}, ...]
     deleteItem(item, fullList, deleteParentNode = false) {
@@ -69,7 +75,13 @@ class Categories extends Component {
         if(list.length > 0) {
             return (
                 <div>
-                    <List list={list} fullList={list} parentId={null} deleteItem={this.deleteItem} />
+                    <List
+                        list={list}
+                        fullList={list}
+                        parentId={null}
+                        activeItemId={this.state.activeItemId}
+                        showItem={this.showItem}
+                        deleteItem={this.deleteItem} />
                 </div>
             );
         } else {
@@ -82,14 +94,20 @@ class Categories extends Component {
     }
 }
 
-const List = ({list, fullList, parentId = null, deleteItem}) => {
+const List = ({list, fullList, parentId = null, activeItemId, showItem, deleteItem}) => {
     return(
         <ol>
             {
-
                 list.map(item =>
                     item.parentId === parentId
-                        ? <ListItem item={item} fullList={fullList} deleteItem={deleteItem}/>
+                        ? <ListItem
+                            key={item.id}
+                            item={item}
+                            fullList={fullList}
+                            activeItemId={activeItemId}
+                            showItem={showItem}
+                            deleteItem={deleteItem}
+                        />
                         : null
                 )
             }
@@ -97,23 +115,26 @@ const List = ({list, fullList, parentId = null, deleteItem}) => {
     );
 };
 
-let getItemById = (id, fullList) => {
-    for (let i = 0; i < fullList.length; i++) {
-        if (fullList[i].id === id) {
-            return fullList[i];
-        }
-    }
-};
-
-const ListItem = ({item, fullList, deleteItem}) => {
+const ListItem = ({item, fullList, activeItemId, showItem, deleteItem}) => {
     let nodesList = item.nodes.map(node => getItemById(node, fullList));
-
     return (
-        <li key={item.id}>
-            {item.name}
+        <li className={'listItem'}>
+            <a
+                id={'listElem'}
+                href={""}
+                className={item.id === activeItemId ? 'activeElement' : ''}
+                onClick={(event) => {showItem(event, item)}}>{item.name}
+            </a>
             <button onClick={ () => {deleteItem(item, fullList, true)}}>x</button>
             {!!nodesList.length &&
-            <List list={nodesList} fullList={fullList} parentId={item.id} deleteItem={deleteItem}/>
+            <List
+                list={nodesList}
+                fullList={fullList}
+                parentId={item.id}
+                activeItemId={activeItemId}
+                showItem={showItem}
+                deleteItem={deleteItem}
+            />
             }
         </li>
     )

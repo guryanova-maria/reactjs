@@ -1,10 +1,38 @@
 .sidebar {
-    width:100%;
+    width:40%;
     height:100%;
-    clear:right;
+    float:left;
 }
 
 .sidebar p {
     padding: 0 40px;
     margin: 16px 0;
 }
+
+li {
+    margin-top: 10px;
+}
+
+li a {
+    color: black;
+    text-decoration: none;
+}
+
+li a:hover {
+    cursor: pointer;
+}
+
+li a.activeElement {
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+button {
+    display: block;
+    height: 20px;
+    width: 20px;
+    border: 1px grey solid;
+    float: right;
+    padding: 0;
+}
+
